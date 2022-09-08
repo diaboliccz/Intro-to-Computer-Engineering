@@ -1,0 +1,6 @@
+{
+    "configuration": "cpu=atmega328",
+    "board": "arduino:avr:nano",
+    "sketch": "Work\\Work2\\35_0039_0429_work2\\35_0039_0429_work2.ino",
+    "port": "COM5"
+}
