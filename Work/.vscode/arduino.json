@@ -2,5 +2,5 @@
     "board": "arduino:avr:uno",
     "programmer": "arduino:avrispmkii",
     "port": "COM3",
-    "sketch": "Work4\\35_0039_0429_work4.ino\\35_0039_0429_work4.ino"
+    "sketch": "Work4\\35_0039_0429_work4\\35_0039_0429_work4.ino"
 }
