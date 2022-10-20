@@ -9,8 +9,10 @@ int devices = lc.getDeviceCount();
 int address;
 int addr_slide = 3;
 int ball_move_time = 50;
+int Health = 5;
+int score = 0;
 
-int ball_x = random(1, 7);
+int ball_x = random(0, 31);
 int ball_y = 0;
 int slide_val;
 int slide_pos;
@@ -20,6 +22,7 @@ int Bounce = 0;
 int ballUp = 0;
 int ballLeft = 1;
 int GameOn = 1;
+int BallOn = 1;
 
 void Update();
 void updateBall();
@@ -49,8 +52,10 @@ void setup()
 
 void loop()
 {
-  while (GameOn)
-  {
+  if(GameOn == 0){
+    gameOver();
+  }
+  else{
     Slide();
   }
 }
@@ -171,16 +176,25 @@ void Ball()
     }
 
     // bounce check
-    if (ball_y == 6 && (ball_x >= slide_x-2 && ball_x <= slide_x + 2))
+    if (ball_y == 6 && (ball_x >= slide_x-3 && ball_x <= slide_x + 3))
     {
       ballUp = 1;
       Bounce = 1;
+      score+=1;
       Bounce_Sound();
     }
     
-    /*if(ball_y == 7){
-      isGameOn = 0;
-    }*/
+    if(ball_y == 7){
+      Health--;
+      
+      if(Health < 0){
+        ball_y = 0;
+        ball_x = random(0,31);
+        ballUp = 0;
+        GameOn = 0;
+        Health = 5;
+      }
+    }
   }
 
   if (ball_x >= 0 && ball_x < 32)
@@ -236,7 +250,7 @@ void Bounce_Sound()
 {
   if (Bounce)
   {
-    tone(speaker, 1000, 20);
+    tone(speaker, 200, 50);
   }
 }
 
@@ -267,7 +281,58 @@ void Show_Led(int addr, int x, int y)
   }
 }
 
+void Score(){
+  int y = score/8;
+  for(int j = 0;j<=y;j++){
+    if(j == y){
+      for(int i = 1;i<=score%8;i++){
+        Show_Led(0,i-1,j);
+      }
+    }
+    else{
+      for(int i = 1; i <= 8; i++){
+        Show_Led(0,i-1,j);
+      }
+    }
+  }
+  
+}
+
 void gameOver()
 {
   GameOn = 0;
+  Score();
+  delay(3000);
+  score = 0;
+  lc.clearDisplay(0);
+  lc.clearDisplay(3);
+  lc.clearDisplay(2);
+  lc.clearDisplay(1);
+  lc.clearDisplay(0);
+  // 3
+  Show_Led(3,1,0);Show_Led(3,1,4);Show_Led(3,1,7);
+  Show_Led(3,2,0);Show_Led(3,2,4);Show_Led(3,2,7);
+  Show_Led(3,3,0);Show_Led(3,3,4);Show_Led(3,3,7);
+  Show_Led(3,4,0);Show_Led(3,4,4);Show_Led(3,4,7);
+  Show_Led(3,5,0);Show_Led(3,5,4);Show_Led(3,5,7);
+  Show_Led(3,6,0);Show_Led(3,6,1);Show_Led(3,6,2);Show_Led(3,6,3);Show_Led(3,6,4);Show_Led(3,6,5);Show_Led(3,6,6);Show_Led(3,6,7);
+  delay(1000);
+
+  Show_Led(2,1,0);Show_Led(2,1,4);Show_Led(2,1,5);Show_Led(2,1,6);Show_Led(2,1,7);
+  Show_Led(2,2,0);Show_Led(2,2,4);Show_Led(2,2,7);
+  Show_Led(2,3,0);Show_Led(2,3,4);Show_Led(2,3,7);
+  Show_Led(2,4,0);Show_Led(2,4,4);Show_Led(2,4,7);
+  Show_Led(2,5,0);Show_Led(2,5,4);Show_Led(2,5,7);
+  Show_Led(2,6,0);Show_Led(2,6,1);Show_Led(2,6,2);Show_Led(2,6,3);Show_Led(2,6,4);Show_Led(2,6,7);
+  delay(1000);
+
+  Show_Led(1,3,3);Show_Led(1,4,2);Show_Led(1,5,1);
+  Show_Led(1,6,0);Show_Led(1,6,1);Show_Led(1,6,2);Show_Led(1,6,3);Show_Led(1,6,4);Show_Led(1,6,5);Show_Led(1,6,6);Show_Led(1,6,7);
+  delay(1000);
+
+  lc.clearDisplay(3);
+  lc.clearDisplay(2);
+  lc.clearDisplay(1);
+  
+  GameOn = 1;
 }
