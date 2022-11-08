@@ -19,6 +19,12 @@
             "includePath": [
                 "C:\\Users\\Kolawat\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.5\\cores\\arduino",
                 "C:\\Users\\Kolawat\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.5\\variants\\standard",
+                "C:\\Users\\Kolawat\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.5\\libraries\\SPI\\src",
+                "C:\\Users\\Kolawat\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.5\\libraries\\Wire\\src",
+                "C:\\Users\\Kolawat\\Desktop\\Arduino\\libraries\\Adafruit_GFX_Library",
+                "C:\\Users\\Kolawat\\Desktop\\Arduino\\libraries\\Adafruit_BusIO",
+                "C:\\Users\\Kolawat\\Desktop\\Arduino\\libraries\\Adafruit_SSD1306",
+                "C:\\Users\\Kolawat\\Desktop\\Arduino\\libraries\\TimerOne",
                 "c:\\users\\kolawat\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\lib\\gcc\\avr\\7.3.0\\include",
                 "c:\\users\\kolawat\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\lib\\gcc\\avr\\7.3.0\\include-fixed",
                 "c:\\users\\kolawat\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\avr\\include"
