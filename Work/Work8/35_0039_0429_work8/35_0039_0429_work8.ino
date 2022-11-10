@@ -20,6 +20,7 @@ QueueHandle_t GREEN_QUEUE;
 
 void setup()
 {
+    //Serial.begin(9600);
     RED_QUEUE = xQueueCreate(10, sizeof(bool));
     YELLOW_QUEUE = xQueueCreate(10, sizeof(bool));
     GREEN_QUEUE = xQueueCreate(10, sizeof(bool));
@@ -56,7 +57,7 @@ void redTaskSender(void *pvParameters)
         }
         if (!Button_Pressed_Check(button))
             Button_Pressed = 0;
-        Delay(50);
+        Delay(10);
     }
 }
 
@@ -88,7 +89,6 @@ void redTaskReceiver(void *pvParameters)
             digitalWrite(LED_RED, 1);
         else if (led == LED_RED)
             digitalWrite(LED_RED, 0);
-
         Delay(1000);
     }
 }
@@ -110,7 +110,7 @@ void yellowTaskSender(void *pvParameters)
         if (!Button_Pressed_Check(button))
             Button_Pressed = 0;
 
-        Delay(50);
+        Delay(10);
     }
 }
 
@@ -167,7 +167,7 @@ void greenTaskSender(void *pvParameters)
         {
             Button_Pressed = 0;
         }
-        Delay(50);
+        Delay(10);
     }
 }
 
@@ -203,7 +203,5 @@ void greenTaskReceiver(void *pvParameters)
         }
     }
 }
-
-
 
 void loop() {}

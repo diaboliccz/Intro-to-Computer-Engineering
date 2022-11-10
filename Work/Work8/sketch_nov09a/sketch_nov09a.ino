@@ -10,6 +10,161 @@ struct Time {
   int sec;
 };
 
+#define NOTE_B0  31
+#define NOTE_C1  33
+#define NOTE_CS1 35
+#define NOTE_D1  37
+#define NOTE_DS1 39
+#define NOTE_E1  41
+#define NOTE_F1  44
+#define NOTE_FS1 46
+#define NOTE_G1  49
+#define NOTE_GS1 52
+#define NOTE_A1  55
+#define NOTE_AS1 58
+#define NOTE_B1  62
+#define NOTE_C2  65
+#define NOTE_CS2 69
+#define NOTE_D2  73
+#define NOTE_DS2 78
+#define NOTE_E2  82
+#define NOTE_F2  87
+#define NOTE_FS2 93
+#define NOTE_G2  98
+#define NOTE_GS2 104
+#define NOTE_A2  110
+#define NOTE_AS2 117
+#define NOTE_B2  123
+#define NOTE_C3  131
+#define NOTE_CS3 139
+#define NOTE_D3  147
+#define NOTE_DS3 156
+#define NOTE_E3  165
+#define NOTE_F3  175
+#define NOTE_FS3 185
+#define NOTE_G3  196
+#define NOTE_GS3 208
+#define NOTE_A3  220
+#define NOTE_AS3 233
+#define NOTE_B3  247
+#define NOTE_C4  262
+#define NOTE_CS4 277
+#define NOTE_D4  294
+#define NOTE_DS4 311
+#define NOTE_E4  330
+#define NOTE_F4  349
+#define NOTE_FS4 370
+#define NOTE_G4  392
+#define NOTE_GS4 415
+#define NOTE_A4  440
+#define NOTE_AS4 466
+#define NOTE_B4  494
+#define NOTE_C5  523
+#define NOTE_CS5 554
+#define NOTE_D5  587
+#define NOTE_DS5 622
+#define NOTE_E5  659
+#define NOTE_F5  698
+#define NOTE_FS5 740
+#define NOTE_G5  784
+#define NOTE_GS5 831
+#define NOTE_A5  880
+#define NOTE_AS5 932
+#define NOTE_B5  988
+#define NOTE_C6  1047
+#define NOTE_CS6 1109
+#define NOTE_D6  1175
+#define NOTE_DS6 1245
+#define NOTE_E6  1319
+#define NOTE_F6  1397
+#define NOTE_FS6 1480
+#define NOTE_G6  1568
+#define NOTE_GS6 1661
+#define NOTE_A6  1760
+#define NOTE_AS6 1865
+#define NOTE_B6  1976
+#define NOTE_C7  2093
+#define NOTE_CS7 2217
+#define NOTE_D7  2349
+#define NOTE_DS7 2489
+#define NOTE_E7  2637
+#define NOTE_F7  2794
+#define NOTE_FS7 2960
+#define NOTE_G7  3136
+#define NOTE_GS7 3322
+#define NOTE_A7  3520
+#define NOTE_AS7 3729
+#define NOTE_B7  3951
+#define NOTE_C8  4186
+#define NOTE_CS8 4435
+#define NOTE_D8  4699
+#define NOTE_DS8 4978
+#define REST      0
+
+
+// change this to make the song slower or faster
+int tempo = 180;
+
+// change this to whichever pin you want to use
+int buzzer = 8;
+
+// notes of the moledy followed by the duration.
+// a 4 means a quarter note, 8 an eighteenth , 16 sixteenth, so on
+// !!negative numbers are used to represent dotted notes,
+// so -4 means a dotted quarter note, that is, a quarter plus an eighteenth!!
+int melody[] = {
+
+  // Nokia Ringtone 
+  // Score available at https://musescore.com/user/29944637/scores/5266155
+  
+  NOTE_E5, 8, NOTE_D5, 8, NOTE_FS4, 4, NOTE_GS4, 4, 
+  NOTE_CS5, 8, NOTE_B4, 8, NOTE_D4, 4, NOTE_E4, 4, 
+  NOTE_B4, 8, NOTE_A4, 8, NOTE_CS4, 4, NOTE_E4, 4,
+  NOTE_A4, 2, 
+};
+
+// sizeof gives the number of bytes, each int value is composed of two bytes (16 bits)
+// there are two values per note (pitch and duration), so for each note there are four bytes
+int notes = sizeof(melody) / sizeof(melody[0]) / 2;
+
+// this calculates the duration of a whole note in ms
+int wholenote = (60000 * 4) / tempo;
+
+int divider = 0, noteDuration = 0;
+
+void Song() {
+  // iterate over the notes of the melody.
+  // Remember, the array is twice the number of notes (notes + durations)
+  for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) {
+
+    // calculates the duration of each note
+    divider = melody[thisNote + 1];
+    if (divider > 0) {
+      // regular note, just proceed
+      noteDuration = (wholenote) / divider;
+    } else if (divider < 0) {
+      // dotted notes are represented with negative durations!!
+      noteDuration = (wholenote) / abs(divider);
+      noteDuration *= 1.5; // increases the duration in half for dotted notes
+    }
+
+    // we only play the note for 90% of the duration, leaving 10% as a pause
+    tone(buzzer, melody[thisNote], noteDuration * 0.9);
+
+    // Wait for the specief duration before playing the next note.
+    delay(noteDuration);
+
+    // stop the waveform generation before the next note.
+    noTone(buzzer);
+  }
+}
+
+
+
+// LDR Settings
+#define LDR_PIN A3
+unsigned int analogValue;
+
 // LED Settings
 #define LED_RED 6
 #define LED_GREEN 7
@@ -20,6 +175,18 @@ struct Time {
 #define SCREEN_HEIGHT 32
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 OLED(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Accelermeter Settings
+const unsigned int X_AXIS_PIN = 0;
+const unsigned int Y_AXIS_PIN = 1;
+const unsigned int Z_AXIS_PIN = 2;
+const unsigned int NUM_AXES = 3;
+const unsigned int PINS[NUM_AXES] = {
+  X_AXIS_PIN, Y_AXIS_PIN, Z_AXIS_PIN
+};
+const unsigned int BUFFER_SIZE = 16;
+int buffer[NUM_AXES][BUFFER_SIZE];
+int buffer_pos[NUM_AXES] = { 0 };
 
 // Button Settings
 #define BTN_1 10
@@ -38,8 +205,7 @@ unsigned long long int lastDebounceTime[4];
 Time Clock = { 0, 0, 0 };
 
 Time Stopwatch = { 0, 0, 0 };
-int Stopwatch_Pause = 1;
-int Countdown_Pause = 1;
+int Stopwatch_On = 1;
 
 Time Alarm = { 0, 0, 0 };
 Time Alarm_Set = { 0, 0, 0 };
@@ -51,18 +217,6 @@ int Alarm_On = 0;
 #define STOPWATCH_MODE 1
 #define ALARM_MODE 2
 int MODE = CLOCK_MODE;
-
-// Accelermeter Settings
-const unsigned int X_AXIS_PIN = A0;
-const unsigned int Y_AXIS_PIN = A1;
-const unsigned int Z_AXIS_PIN = A2;
-const unsigned int NUM_AXES = 3;
-const unsigned int PINS[NUM_AXES] = {
-  X_AXIS_PIN, Y_AXIS_PIN, Z_AXIS_PIN
-};
-const unsigned int BUFFER_SIZE = 16;
-int buffer[NUM_AXES][BUFFER_SIZE];
-int buffer_pos[NUM_AXES] = { 0 };
 
 // ACCELEROMETER 
 int get_axis(const int axis) {
@@ -110,10 +264,9 @@ void LED_Status(int num, int State){
 void interruptClock() {
   timer();
   Stopwatch_Timer();
-  Alarm_Start();
+  change_timestart_alarm();
 }
 
-int Clock_Mul = 1;
 // Main Clock
 void timer() {
   Clock.sec += 1;
@@ -127,13 +280,15 @@ void timer() {
     EEPROM.update(21, Clock.min);
   }
 }
+
 void change_hour() {
-  Clock.hour += 1 * Clock_Mul;
+  Clock.hour += 1;
   EEPROM.update(20, Clock.hour);
   Clock.hour %= 24;
 }
+
 void change_min() {
-  Clock.min += 1 * Clock_Mul;
+  Clock.min += 1;
   Clock.hour += Clock.min / 60;
   EEPROM.update(21, Clock.min);
   Clock.min %= 60;
@@ -141,24 +296,12 @@ void change_min() {
 
 // Stopwatch
 void Stopwatch_Timer() {
-  if (!Stopwatch_Pause && Countdown_Pause == 1) {
+  if (!Stopwatch_On) {
     Stopwatch.sec += 1;
     Stopwatch.min += Stopwatch.sec / 60;
     Stopwatch.sec %= 60;
     Stopwatch.hour += Stopwatch.min / 60;
     Stopwatch.min %= 60;
-  }
-  else if(!Countdown_Pause && Stopwatch_Pause == 1 && Stopwatch.sec > 0){
-    Stopwatch.sec -= 1;
-    Stopwatch.min -= Stopwatch.sec / 60;
-    Stopwatch.sec %= 60;
-    Stopwatch.hour -= Stopwatch.min / 60;
-    Stopwatch.min %= 60;
-    if(Stopwatch.sec == 0 && Countdown_Pause == 0){
-      tone(BUZZER_PIN, 1000, 200);
-      Stopwatch_Pause = 1;
-      Countdown_Pause = 1;
-    }
   }
 }
 
@@ -170,16 +313,14 @@ void Stopwatch_Reset() {
 
 // Alarm
 void change_hour_alarm() {
-  Alarm_Set.hour += 1 * Clock_Mul;
-  //EEPROM.update(20, Alarm_Set.hour);
+  Alarm_Set.hour += 1;
   Alarm_Set.hour %= 24;
 }
 void change_min_alarm() {
-  Alarm_Set.min += 1 * Clock_Mul;
-  //EEPROM.update(21, Alarm_Set.min);
+  Alarm_Set.min += 1;
   Alarm_Set.min %= 60;
 }
-void Alarm_Start() {
+void change_timestart_alarm() {
   if (Clock.sec == 0) {
     Alarm_Set.min = Clock.min;
   }
@@ -192,15 +333,14 @@ void Alarm_Start() {
 void change_mode() {
   MODE += 1;
   MODE %= 3;
-  /*if (MODE == ALARM_MODE && Alarm_On == 0) {
+  if (MODE == ALARM_MODE) {
     Alarm.hour = Clock.hour;
     Alarm.min = Clock.min;
-  }*/
+  }
 }
 
 // Time Text
 String clockText = "00 : 00";
-String clockText_Sec = "00";
 String stopwatchText = "00 : 00";
 String alarmText = "00 : 00";
 String alarm_setText = "00 : 00";
@@ -211,8 +351,8 @@ void time_text() {
   clockText[5] = (Clock.min / 10) + '0';
   clockText[6] = (Clock.min % 10) + '0';
 
-  clockText_Sec[0] = (Clock.sec / 10) + '0';
-  clockText_Sec[1] = (Clock.sec % 10) + '0';
+  clockText[10] = (Clock.sec / 10) + '0';
+  clockText[11] = (Clock.sec % 10) + '0';
 
   stopwatchText[0] = (Stopwatch.min / 10) + '0';
   stopwatchText[1] = (Stopwatch.min % 10) + '0';
@@ -256,18 +396,20 @@ void setup() {
 
   Clock.hour = EEPROM.read(20);
   Clock.min = EEPROM.read(21);
-
-  /*Alarm_Set.hour = EEPROM.read(20);
-  Alarm_Set.hour = EEPROM.read(21);*/
 }
 
 void loop() {
-  Alarm.hour = Clock.hour;
-  Alarm.min = Clock.min;
-  Alarm.sec = Clock.sec;
+
+  unsigned int analogValue = analogRead(LDR_PIN);
 
   OLED.clearDisplay();
   OLED.setTextColor(WHITE);
+
+  if (analogValue > 900) {
+    OLED.dim(true);
+  } else {
+    OLED.dim(false);
+  }
 
   if (debounce(0)) {
     if (!digitalRead(button[0])) {
@@ -276,9 +418,7 @@ void loop() {
           change_hour();
           break;
         case STOPWATCH_MODE:
-          Countdown_Pause = 1;
-          Stopwatch_Pause = !Stopwatch_Pause;
-          tone(BUZZER_PIN, 100, 100);
+          Stopwatch_On = !Stopwatch_On;
           break;
         case ALARM_MODE:
           change_hour_alarm();
@@ -294,7 +434,7 @@ void loop() {
           change_min();
           break;
         case STOPWATCH_MODE:
-          Stopwatch_Pause = 1;
+          Stopwatch_On = 1;
           Stopwatch_Reset();
           break;
         case ALARM_MODE:
@@ -307,20 +447,6 @@ void loop() {
   if (debounce(2)) {
     if (!digitalRead(button[2])) {
       switch (MODE) {
-        case CLOCK_MODE:
-          Clock_Mul += 1;
-          Clock_Mul %= 4;
-          break;
-        case STOPWATCH_MODE:
-          Stopwatch_Pause = 1;
-          if(Stopwatch.sec == 0 && Stopwatch.min == 0 && Stopwatch.hour == 0){
-            Countdown_Pause = 1;
-          }
-          else{
-            Countdown_Pause = !Countdown_Pause;
-          }
-          
-          tone(BUZZER_PIN, 100, 100);
         case ALARM_MODE:
           Alarm_On = Alarm_On == 0 ? 1 : 0;
           break;
@@ -334,9 +460,17 @@ void loop() {
     }
   }
 
-  if ((Alarm_On) && (Alarm_Set.hour == Clock.hour) && (Alarm_Set.min == Clock.min) && Clock.sec == 0) {
-    Alarm_On = 0;
-    tone(BUZZER_PIN, 100, 1000);
+  if (Alarm_On && Alarm_Set.hour == Clock.hour && Alarm_Set.min == Clock.min && Clock.sec == 0) {
+    while (Alarm_On) {
+      Song();
+      if (debounce(2)) {
+        if (!digitalRead(button[2])) {
+          OLED.clearDisplay();
+          Alarm_On = 0;
+          break;
+        }
+      }
+    }
   }
 
   Serial.print(get_x());
@@ -344,43 +478,39 @@ void loop() {
   Serial.print(get_y());
   Serial.print(" ");
   Serial.println(get_z());
-
   time_text();
-
-  String Clock_Mul_Str = "x ";
-  Clock_Mul_Str[1] = Clock_Mul + '0';
+  if (get_x() > 360) {
+    OLED.setRotation(2);
+  } else {
+    OLED.setRotation(0);
+  }
 
   switch (MODE) {
     case CLOCK_MODE:
-      LED_Status(LED_RED, 0);
-      LED_Status(LED_GREEN, 0);
-      Display_Text_OLED(10, 0, 1, "1 Clock");
-      Display_Text_OLED(10, 18, 2, clockText);
-      Display_Text_OLED(115, 0, 1, Clock_Mul_Str);
-      Display_Text_OLED(110, 25, 1, clockText_Sec);
+      Display_Text_OLED(10, 0, 1, "Clock");
+      Display_Text_OLED(10, 12, 2, clockText);
       break;
     case STOPWATCH_MODE:
-      Display_Text_OLED(10, 0, 1, "2 Stopwatch");
+      Display_Text_OLED(10, 0, 1, "Stopwatch");
       Display_Text_OLED(10, 12, 2, stopwatchText);
-      if(Stopwatch_Pause && Countdown_Pause){
+      if(Stopwatch_On){
         Display_Text_OLED(110, 0, 1, "OFF");
         LED_Status(LED_RED, 1);
         LED_Status(LED_GREEN, 0);
-      }
-      else{
+
+      }else{
         Display_Text_OLED(110, 0, 1, "ON");
         LED_Status(LED_RED, 0);
         LED_Status(LED_GREEN,1);
       }
       break;
     case ALARM_MODE:
-      Display_Text_OLED(10, 0, 1, "3 Alarm");
+      Display_Text_OLED(10, 0, 1, "Alarm");
       Display_Text_OLED(10, 25, 1, Alarm_On == 0 ? "OFF" : "ON");
       Display_Text_OLED(60, 12, 1, "NOW");
       Display_Text_OLED(86, 12, 1, alarmText);
       Display_Text_OLED(60, 25, 1, "SET");
       Display_Text_OLED(86, 25, 1, alarm_setText);
-      //Display_Text_OLED(100, 0, 1, clockText_Sec);
       if(Alarm_On){
         LED_Status(LED_RED, 0);
         LED_Status(LED_GREEN, 1);
@@ -391,11 +521,5 @@ void loop() {
       break;
   }
   //Song();
-  if(get_x() > 300){
-    OLED.setRotation(0);
-  }
-  else{
-    OLED.setRotation(2);
-  }
   OLED.display();
 }
